@@ -1,0 +1,18 @@
+{
+  "cwd": "C:\\Users\\stani\\MyApp",
+  "type": [
+    "web"
+  ],
+  "name": "FindersKeepers",
+  "framework": "core",
+  "template": "single-view",
+  "bundler": "vite",
+  "cssPreProcessor": false,
+  "theming": {
+    "customColor": false,
+    "color": "#007aff",
+    "darkMode": false,
+    "iconFonts": true
+  },
+  "customBuild": false
+}
