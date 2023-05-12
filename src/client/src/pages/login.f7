@@ -1,17 +1,19 @@
+
 <template>
+ <div class="page" data-name="form">
   <!-- Default view-page layout -->
   <div class="view">
     <div class="page" data-name="login-screen-page">
       <!-- page-content has additional login-screen content -->
       <div class="page-content login-screen-content">
-        <div class="login-screen-title">FindersKeepers</div>
+        <div class="login-screen-title">FindersKeepers login</div>
         <!-- Login form -->
         <form>
           <div class="list">
             <ul>
               <li class="item-content item-input">
                 <div class="item-inner">
-                  <div class="item-title item-label">Username</div>
+                  <div class="item-title item-label">Username or</div>
                   <div class="item-input-wrap">
                     <input type="text" name="username" placeholder="Username" @change="${updateUsername}" />
                     <span class="input-clear-button"></span>
@@ -30,7 +32,6 @@
             </ul>
           </div>
           <div class="block-footer">
-            <a href="#" class="item-link list-button login-button button-fill color-blue" @click="${goToSignUpPage}">Sign Up Instead</a>
           </div>
           <div class="list">
             <ul>
@@ -42,6 +43,7 @@
         </form>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -61,42 +63,45 @@
       $update();
     }
 
-    const alertLoginData = () => {
-      const data = { username, password };
-      fetch('http://127.0.0.1:3000/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log(data);
-          if (data.token) {
-            console.log("User logged in successfully!");
-            localStorage.setItem('token', data.token);
-            $f7.dialog.alert("User logged in successfully!");
-            $f7.router.navigate('/');
-          } else if (data.error === "Username does not exist") {
-            $f7.dialog.alert("Username does not exist");
-            console.log("Username does not exist");
-          } else if (data.error === "Invalid password") {
-            $f7.dialog.alert("Invalid password");
-            console.log("Invalid password");
-          }
-        })
-        .catch(error => {
-          console.error('There was a problem with the fetch operation:', error);
-        });
+   const alertLoginData = () => {
+  const data = { username, password };
+  fetch('http://127.0.0.1:3000/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
     }
+    return response.json();
+  })
+  .then(data => {
+    console.log(data);
+    if (data.token) {
+      console.log("User logged in successfully!");
+      localStorage.setItem('token', data.token);
+      localStorage.removeItem('loggedIn');
+      localStorage.setItem('loggedIn', true); // set the flag to true
+      $f7.dialog.alert("User logged in successfully!", null, function() {
+window.location.replace("/map");      });
+    } else if (data.error === "Username does not exist") {
+      $f7.dialog.alert("Username does not exist");
+      console.log("Username does not exist");
+    } else if (data.error === "Invalid password") {
+      $f7.dialog.alert("Invalid password");
+      console.log("Invalid password");
+    }
+  })
+  .catch(error => {
+    console.error('There was a problem with the fetch operation:', error);
+  });
+}
 
     
     return $render;
   }
 </script>
+

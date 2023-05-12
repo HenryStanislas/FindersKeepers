@@ -46,9 +46,11 @@ var app = new Framework7({
     init: function () {
       var f7 = this;
       var startUrl = '/signup/';
-      var isLoggedIn = false;
-      //var isLoggedIn = store.state.user.isLoggedIn;
-      if (isLoggedIn) startUrl = '/';
+      
+      
+      const isLoggedIn = localStorage.getItem('loggedIn');
+      if (isLoggedIn) startUrl = '/map/';
+    
 
       //init view
       var mainView = app.views.create('.view-main', {url: startUrl});
@@ -61,35 +63,3 @@ var app = new Framework7({
   },
 });
 
-// // Assuming you have a form in your HTML with id="signup-form"
-// const loginForm = document.getElementById('login-form');
-
-// loginForm.addEventListener('submit', (event) => {
-//   event.preventDefault(); // prevent the form from submitting in the default way
-
-//   const formData = new FormData(loginForm);
-
-//   fetch('/login', {
-//     method: 'POST',
-//     body: formData
-//   })
-//   .then(response => response.json())
-//   .then(data => {
-//     console.log(data); // handle the response from the server
-//     // You could show a success message, redirect to a new page, etc.
-//   })
-//   .catch(error => {
-//     console.error(error); // handle any errors
-//     // You could show an error message to the user, for example.
-//   });
-// });
-
-
-
-
-
-
-
-
-
- 

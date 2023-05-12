@@ -4,6 +4,8 @@ import AboutPage from '../pages/about.f7';
 import FormPage from '../pages/form.f7';
 import SignUp from '../pages/signup.f7';
 import LogIn from '../pages/login.f7';
+import Map from '../pages/map.f7';
+
 
 
 import DynamicRoutePage from '../pages/dynamic-route.f7';
@@ -15,6 +17,11 @@ var routes = [
   {
     path: '/about/',
     component: AboutPage,
+  },
+
+  {
+    path: '/map/',
+    component: Map,
   },
   {
     path: '/form/',

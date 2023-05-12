@@ -2,22 +2,7 @@
 <template>
   <div id="app">
 
-    <!-- Left panel with cover effect-->
-    <div class="panel panel-left panel-cover dark panel-init">
-      <div class="view">
-        <div class="page">
-          <div class="navbar">
-            <div class="navbar-bg"></div>
-            <div class="navbar-inner">
-              <div class="title">Left Panel</div>
-            </div>
-          </div>
-          <div class="page-content">
-            <div class="block">Left panel content goes here</div>
-          </div>
-        </div>
-      </div>
-    </div>
+
     
     <!-- Right panel with reveal effect-->
     

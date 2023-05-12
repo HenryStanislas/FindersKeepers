@@ -8,6 +8,8 @@ const MongoClient = require('mongodb').MongoClient;
 const url = 'mongodb://127.0.0.1:27017/FindersKeepers_db';
 console.log("app");
 
+// Enable CORS for all domains
+
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -98,34 +100,40 @@ MongoClient.connect(url)
 
     // ROUTE POUR LOG IN
 
-    app.post("/log", (req, res) => {
+    app.post("/login", (req, res) => {
       const { username, password } = req.body;
-    
+      
+      
       users.findOne({ username })
         .then(user => {
           if (!user) {
             console.log("user not found");
-            return res.send("user not found!");
+            return res.status(201).json({ error: "Username does not exist" });
+            
           } else {
+            console.log("euh" + username);
+            console.log(password);
+            console.log("huh" + user.password);
+            console.log(user.username);
             bcrypt.hash(req.body.password, 10, function (err, hash) {
               if (err) {
-                console.log("pitié");
+                console.log("pitié 1");
                 throw err;
               } else {
                 bcrypt.compare(user.password, hash, function (err, result) {
                   if (err) {
-                    console.log("pitié");
+                    console.log("pitié 2");
                     throw err;
                   }
                   console.log(result);
                   if (!result) {
-                    console.log("pitié");
-                    return res.status(500).json({ message: "Wrong password!" });
+                    console.log("pitié 3");
+                    return res.status(201).json({ error: "Invalid password" });
                   } else {
-                    console.log("pitié");
+                    console.log("pitié 4");
                     const token = jwt.sign({ id: user._id }, process.env.JWT_KEY, { expiresIn: "1d" });
 
-                    return res.status(500).json({ message: "Connected!", token });
+                    return res.status(201).json({ message: "Connected!", token });
                   }
                 });
               }

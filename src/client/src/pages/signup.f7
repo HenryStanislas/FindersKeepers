@@ -1,60 +1,55 @@
 <template>
-
   <!-- Default view-page layout -->
-  <div class="view">
-    <div class="page" data-name="login-screen-page">
+ <div class="page" data-name="form">
+    
       <!-- page-content has additional login-screen content -->
       <div class="page-content login-screen-content">
-        <div class="login-screen-title">FindersKeepers</div>
+        <div class="login-screen-title">FindersKeepers Signup</div>
         <!-- Login form -->
-        <form>
-          <div class="list">
-            <ul>
-              <li class="item-content item-input">
-                <div class="item-inner">
-                  <div class="item-title item-label">Username</div>
-                  <div class="item-input-wrap">
-                    <input type="text" name="username" placeholder="Username" @change="${updateUsername}" />
-                    <span class="input-clear-button"></span>
-                  </div>
+        <div class="list">
+          <ul>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Username</div>
+                <div class="item-input-wrap">
+                  <input type="text" name="username" placeholder="Username" @change="${updateUsername}" />
+                  <span class="input-clear-button"></span>
                 </div>
-              </li>
-              <li class="item-content item-input">
-                <div class="item-inner">
-                  <div class="item-title item-label">Password</div>
-                  <div class="item-input-wrap">
-                    <input type="password" name="password" placeholder="Password" @change="${updatePassword}" />
-                    <span class="input-clear-button"></span>
-                  </div>
+              </div>
+            </li>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Password</div>
+                <div class="item-input-wrap">
+                  <input type="password" name="password" placeholder="Password" @change="${updatePassword}" />
+                  <span class="input-clear-button"></span>
                 </div>
-              </li>
-              <li class="item-content item-input">
-                <div class="item-inner">
-                  <div class="item-title item-label">Email</div>
-                  <div class="item-input-wrap">
-                    <input type="email" name="email" placeholder="Email" @change="${updateEmail}" />
-                    <span class="input-clear-button"></span>
-                  </div>
+              </div>
+            </li>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Email</div>
+                <div class="item-input-wrap">
+                  <input type="email" name="email" placeholder="Email" @change="${updateEmail}" />
+                  <span class="input-clear-button"></span>
                 </div>
-              </li>
-            </ul>
-          </div>
-          <div class="block-footer">
-  <a href="#" class="item-link list-button login-button button-fill color-blue" @click="${goToLoginPage}">Login instead</a>
-
-</div>
-          <div class="list">
-            <ul>
-              <li>
-                <a href="#" class="item-link list-button login-button button-fill color-blue" @click="${alertLoginData}">Sign In</a>
-              </li>
-            </ul>
-          </div>
-        </form>
-      </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="block-footer">
+          <a href="/login/" class="item-content item-link">Login instead </a>
+        </div>
+        <div class="list">
+          <ul>
+            <li>
+              <a href="#" class="item-link list-button login-button button-fill color-blue" @click="${alertLoginData}">Sign In</a>
+            </li>
+          </ul>
+        </div>
+      
     </div>
   </div>
-
 </template>
 
 <script>
@@ -99,9 +94,12 @@ const fetchData = () => {
       console.log(data);
       if (data.message) {
         console.log("User created successfully!");
-         $f7.dialog.alert("User created successfully!");
+          $f7.dialog.alert("User created successfully!", null, function() {
+window.location.replace("/map");      });
+         localStorage.removeItem('loggedIn');
+      localStorage.setItem('loggedIn', true); 
       } else if (data.error === "Username already exists") {
-        $f7.dialog.alert("Username already exists");
+        $f7.dialog.alert("Username already exists, try to log in instead");
         console.log("Username already exists");
       } else if (data.error === "Email already exists. Please log in instead") {
         $f7.dialog.alert("Email already exists. Please log in instead");
@@ -117,9 +115,7 @@ fetchData();
       
     }
 
-    const goToLoginPage = () => {
-  app.view.main.router.navigate('/login/');
-};
+
 
     return $render;
   }
