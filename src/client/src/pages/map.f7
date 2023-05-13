@@ -1,15 +1,15 @@
 <template>
   <div class="page">
     <div class="toolbar toolbar-bottom" style="background-color: black; color: white";>
-      <div class="toolbar-inner">
-        <div class="title">FindersKeepers</div>
-        <div class="cache-wrapper" style="position: absolute; right: 70px; top: 0; margin: 10px;">
-          <a href="#" class="cache" style="color: white;" @click="${openCachePopup}">Add a cache</a>
-        </div>
-        <div class="logout-wrapper" style="position: absolute; right: 0; top: 0; margin: 10px;">
-          <a href="#" class="logout" style="color: white;" @click="${logout}">Log out</a>
-        </div>
-      </div>
+     <div class="toolbar-inner">
+  <div class="title">FindersKeepers</div>
+  <div class="cache-wrapper" style="position: absolute; right: 140px; top: 0; margin: 10px;">
+    <a href="#" class="cache" style="color: white;" @click="${openCachePopup}">Add a cache</a>
+  </div>
+  <div class="logout-wrapper" style="position: absolute; right: 0; top: 0; margin: 10px;">
+    <a href="#" class="logout" style="color: white;" @click="${logout}">Log out</a>
+  </div>
+</div>
     </div>
     <div class="page-content">
       <div class="map-wrapper" style="border-top: 10px solid black; height: calc(100% - 96px);">
@@ -28,15 +28,55 @@
         L.control.maptilerGeocoding({ apiKey: key }).addTo(map);
 
         map.locate({setView: true, maxZoom: 16});
+  function loadCaches() {
+    
+  fetch('http://127.0.0.1:3000/cache')
+    .then(response => {
+      if (!response.ok) throw new Error(response.status);
+      return response.json();
+    })
+    .then(data => {
 
-  function onLocationFound(e) {
+      
+      data.forEach(cache => {
+        const lat = cache.location.lat;
+        const lng = cache.location.lng;
+        const difficulty = cache.difficulty;
+        const username = cache.username;
+        const latRounded = Math.round(lat * 1000) / 1000;
+        const lngRounded = Math.round(lng * 1000) / 1000;
+
+        
+        // Check if the cache is within the specified radius
+        const userLocation = map.getCenter();
+        const cacheLocation = L.latLng(lat, lng);
+        const radius = 5000; // in meters
+        const distance = cacheLocation.distanceTo(userLocation);
+        if (distance > radius) return; // skip this cache
+
+
+
+        // Create a marker for the cache
+        const marker = L.marker([lat, lng]).addTo(map);
+        marker.bindPopup(username + " created a cache at location " + latRounded + "," + lngRounded + " with difficulty ").openPopup();
+      });
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+}
+        map.on('locationfound', onLocationFound);
+
+        function onLocationFound(e) {
           var radius = e.accuracy;
           L.marker(e.latlng).addTo(map)
             .bindPopup("You are within " + radius + " meters from this point").openPopup();
           L.circle(e.latlng, radius).addTo(map);
+          
+          loadCaches();
         }
 
-        map.on('locationfound', onLocationFound);
+
 
        
 
@@ -52,6 +92,8 @@
       localStorage.removeItem('loggedIn');
       window.location.replace("/signup");
     };
+
+    
 
      // Add a cache at the current location
 function openCachePopup() {
@@ -90,9 +132,11 @@ onClick: function () {
         return response.json();
       })
       .then(data => {
-        L.marker([lat, lng], { icon: redMarker }).addTo(map)
-          .bindPopup(`Cache added at ${lat}, ${lng} with difficulty ${difficulty}`).openPopup();
-      })
+  const latRounded = Math.round(lat * 1000) / 1000;
+  const lngRounded = Math.round(lng * 1000) / 1000;
+  L.marker([lat, lng], { icon: redMarker }).addTo(map)
+    .bindPopup(`<b>${localStorage.getItem('username')}</b> created a cache at <b style="color: blue">${latRounded}, ${lngRounded}</b> with difficulty <b style="color: darkgreen">${difficulty}</b>`).openPopup();
+})
       .catch(error => {
         console.error('Error:', error);
         $f7.dialog.alert('Failed to add cache.');
@@ -110,13 +154,35 @@ onClick: function () {
             const lng = position.coords.longitude;
             $f7.dialog.prompt('Enter the difficulty of the cache (1-5):', 'Add a cache', function (difficulty) {
               if (!difficulty) return;
-              const cacheData = {
-                lat: lat,
-                lng: lng,
-                difficulty: parseInt(difficulty)
-              };
+             
+               const cacheData = {
+      username: localStorage.getItem('username'),
+      location: { lat: lat, lng: lng },
+      difficulty: parseInt(difficulty),
+    };
               console.log(cacheData);
-              // Send a POST request to /cache with the cacheData
+                 fetch('http://127.0.0.1:3000/cache', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify(cacheData)
+    })
+      .then(response => {
+        if (!response.ok) throw new Error(response.status);
+        return response.json();
+      })
+     .then(data => {
+  const latRounded = Math.round(lat * 1000) / 1000;
+  const lngRounded = Math.round(lng * 1000) / 1000;
+  L.marker([lat, lng], { icon: redMarker }).addTo(map)
+    .bindPopup(`<b>${localStorage.getItem('username')}</b> created a cache at <b style="color: blue">${latRounded}, ${lngRounded}</b> with difficulty <b style="color: darkgreen">${difficulty}</b>`).openPopup();
+})
+      .catch(error => {
+        console.error('Error:', error);
+        $f7.dialog.alert('Failed to add cache.');
+      });
             });
           });
         } else {

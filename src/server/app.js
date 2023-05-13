@@ -165,9 +165,22 @@ MongoClient.connect(url)
           res.status(500).json({ error: "Internal server error" });
         });
     });
+
+    app.get("/cache", async (req, res) => {
+      try {
+        const caches = await db.collection("caches").find().toArray();
+        res.json(caches);
+        console.log("peutiguzn");
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
+    
     
     app.listen(3000, () => {
       console.log("Server running on port 3000");
     });
   })
   .catch(err => { throw err })
+ 

@@ -13,6 +13,7 @@ const BUILD_DIR = path.resolve(
   isCordova ? './cordova/www' : './www',
 );
 export default async () => {
+  
 
   return  {
     plugins: [
@@ -30,6 +31,7 @@ export default async () => {
     base: '',
     publicDir: PUBLIC_DIR,
     build: {
+      assetsInclude: ["**/*.css", "**/*.js", "**/*.html", "**/*.f7"],
       outDir: BUILD_DIR,
       assetsInlineLimit: 0,
       emptyOutDir: true,
