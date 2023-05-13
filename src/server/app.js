@@ -11,10 +11,13 @@ console.log("app");
 // Enable CORS for all domains
 
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Authorization, Origin, X-Requested-With, Content-Type, Accept');
   next();
 });
+
+
+
 const UserChecker = (req, res, next) => {
   console.log(req.body); // add this line to log the request body
   const user = {
@@ -30,10 +33,11 @@ const UserChecker = (req, res, next) => {
 }
  
 MongoClient.connect(url)
-.then(client => client.db("FindersKeepers_db").collection("users"))
-.then(users => {
+  .then(client => {
+    const db = client.db("FindersKeepers_db");
+    const users = db.collection("users");
+    const caches = db.collection("caches");
 
-    console.log("55");
     let tab = ["un", "deux"];
 
     app.get("/list", (req, res) => {
@@ -44,7 +48,6 @@ MongoClient.connect(url)
       console.log("root");
       res.json(tab);
     })
-
 
     // ROUTE POUR SIGN UP
 
@@ -146,7 +149,23 @@ MongoClient.connect(url)
         });
     });
 
-
+    app.post("/cache", (req, res) => {
+      const cache = {
+        username: req.body.username,
+        location: req.body.location,
+        difficulty: req.body.difficulty,
+      };
+    
+      caches.insertOne(cache)
+        .then(result => {
+          res.status(201).json({ message: "Cache created successfully!" });
+        })
+        .catch(err => {
+          console.error(err);
+          res.status(500).json({ error: "Internal server error" });
+        });
+    });
+    
     app.listen(3000, () => {
       console.log("Server running on port 3000");
     });

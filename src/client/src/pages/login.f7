@@ -83,6 +83,7 @@
     if (data.token) {
       console.log("User logged in successfully!");
       localStorage.setItem('token', data.token);
+      localStorage.setItem('username', username); 
       localStorage.removeItem('loggedIn');
       localStorage.setItem('loggedIn', true); // set the flag to true
       $f7.dialog.alert("User logged in successfully!", null, function() {

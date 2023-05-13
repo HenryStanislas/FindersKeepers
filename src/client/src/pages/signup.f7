@@ -98,6 +98,7 @@ const fetchData = () => {
 window.location.replace("/map");      });
          localStorage.removeItem('loggedIn');
       localStorage.setItem('loggedIn', true); 
+      localStorage.setItem('username', username); 
       } else if (data.error === "Username already exists") {
         $f7.dialog.alert("Username already exists, try to log in instead");
         console.log("Username already exists");

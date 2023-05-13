@@ -1,55 +1,145 @@
-
-
-
 <template>
   <div class="page">
-  
+    <div class="toolbar toolbar-bottom" style="background-color: black; color: white";>
+      <div class="toolbar-inner">
+        <div class="title">FindersKeepers</div>
+        <div class="cache-wrapper" style="position: absolute; right: 70px; top: 0; margin: 10px;">
+          <a href="#" class="cache" style="color: white;" @click="${openCachePopup}">Add a cache</a>
+        </div>
+        <div class="logout-wrapper" style="position: absolute; right: 0; top: 0; margin: 10px;">
+          <a href="#" class="logout" style="color: white;" @click="${logout}">Log out</a>
+        </div>
+      </div>
+    </div>
     <div class="page-content">
-      <div id="map"> </div>
+      <div class="map-wrapper" style="border-top: 10px solid black; height: calc(100% - 96px);">
+        <div id="map" style="height: 100%;"></div>
+      </div>
+      <script>
+        var map = L.map('map').fitWorld();
 
-      <script> 
-      var map = L.map('map').fitWorld();
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '© OpenStreetMap'
+        }).addTo(map);
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-    }).addTo(map);
+        const key = 'alPYKT8GM8T9IUfX9h3r';
 
-    const key = 'alPYKT8GM8T9IUfX9h3r';
-  
-    L.control.maptilerGeocoding({ apiKey: key }).addTo(map);
+        L.control.maptilerGeocoding({ apiKey: key }).addTo(map);
 
-    map.locate({setView: true, maxZoom: 16});
+        map.locate({setView: true, maxZoom: 16});
 
-    function onLocationFound(e) {
-    var radius = e.accuracy;
-    
+  function onLocationFound(e) {
+          var radius = e.accuracy;
+          L.marker(e.latlng).addTo(map)
+            .bindPopup("You are within " + radius + " meters from this point").openPopup();
+          L.circle(e.latlng, radius).addTo(map);
+        }
 
-    L.marker(e.latlng).addTo(map)
-        .bindPopup("You are within " + radius + " meters from this point").openPopup();
+        map.on('locationfound', onLocationFound);
 
-    L.circle(e.latlng, radius).addTo(map);
-}
+       
 
-map.on('locationfound', onLocationFound);
-
-    </script> 
-     
-      
+      </script>
     </div>
   </div>
-  
 </template>
 
+<script>
+  export default (props, { $f7, $update }) => {
+    const logout = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('loggedIn');
+      window.location.replace("/signup");
+    };
 
+     // Add a cache at the current location
+function openCachePopup() {
+  const buttons = [
+    {
+      text: 'Enter Coordinates',
+onClick: function () {
+  $f7.dialog.prompt('Enter the coordinates of the cache in the format "lat, lng":', 'Add a cache', function (cacheCoords) {
+    if (!cacheCoords) return;
+    cacheCoords = cacheCoords.split(',');
+    const lat = parseFloat(cacheCoords[0].trim());
+    const lng = parseFloat(cacheCoords[1].trim());
+    if (isNaN(lat) || isNaN(lng)) {
+      $f7.dialog.alert('Invalid coordinates format. Please enter the coordinates in the format "lat, lng".');
+      return;
+    }
+    
+    
+    $f7.dialog.prompt('Enter the difficulty of the cache (1-5):', 'Add a cache', function (difficulty) {
+    if (!difficulty) return;
+    const cache = {
+      username: localStorage.getItem('username'),
+      location: { lat: lat, lng: lng },
+      difficulty: parseInt(difficulty),
+    };
+    fetch('http://127.0.0.1:3000/cache', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify(cache)
+    })
+      .then(response => {
+        if (!response.ok) throw new Error(response.status);
+        return response.json();
+      })
+      .then(data => {
+        L.marker([lat, lng], { icon: redMarker }).addTo(map)
+          .bindPopup(`Cache added at ${lat}, ${lng} with difficulty ${difficulty}`).openPopup();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        $f7.dialog.alert('Failed to add cache.');
+      });
+      });
+  });
+}
+    },
+    {
+      text: 'My Current Location',
+      onClick: function () {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function (position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            $f7.dialog.prompt('Enter the difficulty of the cache (1-5):', 'Add a cache', function (difficulty) {
+              if (!difficulty) return;
+              const cacheData = {
+                lat: lat,
+                lng: lng,
+                difficulty: parseInt(difficulty)
+              };
+              console.log(cacheData);
+              // Send a POST request to /cache with the cacheData
+            });
+          });
+        } else {
+          $f7.dialog.alert('Geolocation is not supported by this browser. Please enter the coordinates manually.');
+        }
+      }
+    }
+  ];
 
-<script> 
-export default () => {
-  return $render;
-};
+  const actions = $f7.actions.create({ buttons: buttons });
+  actions.open();
+}
 
+    // Create a red marker icon
+    const redMarker = L.icon({
+      iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
 
-
-
-
+    return $render;
+  };
 </script>
