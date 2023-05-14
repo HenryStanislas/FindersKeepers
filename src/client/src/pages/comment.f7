@@ -1,0 +1,124 @@
+<template>
+  <div class="page" data-name="comment-form">
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="left">
+          <a href="#" class="link back">
+            <i class="icon icon-back"></i>
+            <span>Back</span>
+          </a>
+        </div>
+        <div class="title">Leave a Comment</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <form class="comment-form">
+        <div class="list">
+          <ul>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Did you find this cache?</div>
+                <div class="item-input-wrap">
+                  <a href="#" class="button button-fill popup-open color-black" data-popup=".found-cache-popup">Yes/No</a>
+                </div>
+              </div>
+            </li>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Comment</div>
+                <div class="item-input-wrap">
+                  <textarea name="comment" placeholder="Your comment" @change="${updateComment}"></textarea>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="block">
+          <button type="submit" class="button button-fill color-black" @click="${submitComment}">Submit</button>
+        </div>
+      </form>
+    </div>
+    <div class="popup found-cache-popup">
+      <div class="view">
+        <div class="page">
+          <div class="navbar">
+            <div class="navbar-inner">
+              <div class="title">Found the Cache?</div>
+            </div>
+          </div>
+          <div class="page-content">
+            <div class="list">
+              <ul>
+                <li>
+                  <a href="#" class="item-link item-content found-yes" @click="${() => setFoundCache(true)}">
+                    <div class="item-inner">
+                      <div class="item-title">Yes</div>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" class="item-link item-content found-no" @click="${() => setFoundCache(false)}">
+                    <div class="item-inner">
+                      <div class="item-title">No</div>
+                    </div>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  export default (props, { $f7, $update }) => {
+    console.log("stp");
+    // Comment screen data
+    let username = '';
+    let comment = '';
+    let foundCache = null;
+    
+
+    const updateComment = (e) => {
+      comment = e.target.value;
+      $update();
+    }
+
+    const setFoundCache = (found) => {
+      foundCache = found;
+      $update();
+    };
+   
+    const submitComment = () => {
+      const data = { username: localStorage.getItem('username'), comment, cacheID: localStorage.getItem('cacheID'), foundCache };
+      console.log("idk " +foundCache);
+      
+      fetch("http://127.0.0.1:3000/comment/", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log(data);
+      
+      })
+      .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+        $f7.dialog.alert("There was an error adding your comment. Please try again later.");
+      });
+    }
+
+    return $render;
+  }
+</script>

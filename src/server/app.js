@@ -9,9 +9,9 @@ const url = 'mongodb://127.0.0.1:27017/FindersKeepers_db';
 console.log("app");
 
 // Enable CORS for all domains
-
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'Authorization, Origin, X-Requested-With, Content-Type, Accept');
   next();
 });
@@ -76,12 +76,9 @@ MongoClient.connect(url)
                 } else {
                   users.insertOne(user)
                     .then(result => {
-                      console.log("pitié 3");
                       res.status(201).json({ message: "User created successfully!" }); 
-                      console.log("CA MARCHE OMG");
                     })
                     .catch(err => {
-                      console.log("pitié 4");
                       console.error(err);
                       res.status(201).json({ error: "Error inserting user into database" });
                     });
@@ -105,8 +102,6 @@ MongoClient.connect(url)
 
     app.post("/login", (req, res) => {
       const { username, password } = req.body;
-      
-      
       users.findOne({ username })
         .then(user => {
           if (!user) {
@@ -114,26 +109,18 @@ MongoClient.connect(url)
             return res.status(201).json({ error: "Username does not exist" });
             
           } else {
-            console.log("euh" + username);
-            console.log(password);
-            console.log("huh" + user.password);
-            console.log(user.username);
             bcrypt.hash(req.body.password, 10, function (err, hash) {
               if (err) {
-                console.log("pitié 1");
                 throw err;
               } else {
                 bcrypt.compare(user.password, hash, function (err, result) {
                   if (err) {
-                    console.log("pitié 2");
                     throw err;
                   }
                   console.log(result);
                   if (!result) {
-                    console.log("pitié 3");
                     return res.status(201).json({ error: "Invalid password" });
                   } else {
-                    console.log("pitié 4");
                     const token = jwt.sign({ id: user._id }, process.env.JWT_KEY, { expiresIn: "1d" });
 
                     return res.status(201).json({ message: "Connected!", token });
@@ -170,13 +157,48 @@ MongoClient.connect(url)
       try {
         const caches = await db.collection("caches").find().toArray();
         res.json(caches);
-        console.log("peutiguzn");
       } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Internal server error" });
       }
     });
-    
+    app.post('/comment/', async (req, res) => {
+      const { username, comment,cacheID, foundCache} = req.body;
+      console.log(foundCache);
+      try {
+        const commentDoc = { cacheID, username, comment, foundCache };
+        const result = await db.collection('comments').insertOne(commentDoc);
+        res.json(result);
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    app.get('/comment/:cacheID', async (req, res) => {
+      try {
+        const cacheID = req.params.cacheID;
+        const comments = await db.collection("comments").find({ cacheID }).toArray(); // Only get comments for the specific cache ID
+        res.json(comments);
+      } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+      }
+    });
+
+    app.delete('/cache/:cacheID', async (req, res) => {
+      try {
+        
+        console.log("jpp");
+        const cacheId = req.params.id;
+        const result = await db.collection("caches").deleteOne({cacheId});
+    console.log(result.deletedCount); // should be 1 if a cache with the given _id was found and deleted
+
+      } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+      }
+    });
     
     app.listen(3000, () => {
       console.log("Server running on port 3000");

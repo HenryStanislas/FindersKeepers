@@ -6,6 +6,7 @@
   <div class="cache-wrapper" style="position: absolute; right: 140px; top: 0; margin: 10px;">
     <a href="#" class="cache" style="color: white;" @click="${openCachePopup}">Add a cache</a>
   </div>
+  
   <div class="logout-wrapper" style="position: absolute; right: 0; top: 0; margin: 10px;">
     <a href="#" class="logout" style="color: white;" @click="${logout}">Log out</a>
   </div>
@@ -28,16 +29,14 @@
         L.control.maptilerGeocoding({ apiKey: key }).addTo(map);
 
         map.locate({setView: true, maxZoom: 16});
-  function loadCaches() {
-    
+
+function loadCaches() {
   fetch('http://127.0.0.1:3000/cache')
     .then(response => {
       if (!response.ok) throw new Error(response.status);
       return response.json();
     })
     .then(data => {
-
-      
       data.forEach(cache => {
         const lat = cache.location.lat;
         const lng = cache.location.lng;
@@ -45,20 +44,52 @@
         const username = cache.username;
         const latRounded = Math.round(lat * 1000) / 1000;
         const lngRounded = Math.round(lng * 1000) / 1000;
-
         
-        // Check if the cache is within the specified radius
         const userLocation = map.getCenter();
         const cacheLocation = L.latLng(lat, lng);
         const radius = 5000; // in meters
         const distance = cacheLocation.distanceTo(userLocation);
         if (distance > radius) return; // skip this cache
 
+        // create the marker using the custom icon
+        let markerColor = 'blue';
 
+        // Retrieve comments for this cache
+        const cacheID = cache._id
+        fetch("http://127.0.0.1:3000/comment/" + cacheID)
+          .then(response => {
+            if (!response.ok) throw new Error(response.status);
+            return response.json();
+          })
+          .then(comments => {
+            // Check if any comments have foundCache set to true
+            comments.forEach(comment => {
+              if (comment.foundCache && (comment.username === localStorage.getItem('username'))) {
+                markerColor = 'green';
+              }
+            });
 
-        // Create a marker for the cache
-        const marker = L.marker([lat, lng]).addTo(map);
-        marker.bindPopup(username + " created a cache at location " + latRounded + "," + lngRounded + " with difficulty ").openPopup();
+            if (username === localStorage.getItem('username')) {
+              markerColor = 'red';
+            }
+
+            const markerIcon = L.icon({
+              iconUrl: "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-"+markerColor+".png",
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34],
+              shadowSize: [41, 41]
+            });
+            const marker = L.marker([lat, lng], {icon: markerIcon}).addTo(map);
+
+            marker.bindPopup(username + " created a cache at location " + latRounded + "," + lngRounded + " with difficulty " + difficulty);
+            marker.on('click', () => {
+              createCommentPopup(cache);
+            });
+          })
+          .catch(error => {
+            console.error('Error:', error);
+          });
       });
     })
     .catch(error => {
@@ -67,18 +98,129 @@
 }
         map.on('locationfound', onLocationFound);
 
+        map.on('click', (e) => {
+  const lat = e.latlng.lat;
+  const lng = e.latlng.lng;
+  console.log("Clicked at "+ lat + lng);
+});
+
         function onLocationFound(e) {
           var radius = e.accuracy;
           L.marker(e.latlng).addTo(map)
             .bindPopup("You are within " + radius + " meters from this point").openPopup();
           L.circle(e.latlng, radius).addTo(map);
-          
           loadCaches();
         }
+        
+function createCommentPopup(cache) {
+  const isOwner = localStorage.getItem('username') === cache.username;
+  
+  const popupContent = document.createElement('div');
+  
+  // Add title
+  const title = document.createElement('h3');
+  title.textContent = 'Cache Info';
+  popupContent.appendChild(title);
+  
+  // Add description
+  const desc = document.createElement('p');
+
+  const difficultyText = document.createElement('span');
+  difficultyText.textContent = 'Difficulty: ';
+  difficultyText.style.color = 'green';
+  difficultyText.style.fontWeight = 'bold';
+  desc.appendChild(difficultyText);
+
+  const difficultyValue = document.createElement('span');
+  difficultyValue.textContent = cache.difficulty;
+  difficultyValue.style.color = 'green';
+  difficultyValue.style.fontWeight = 'bold';
+  desc.appendChild(difficultyValue);
+
+  desc.appendChild(document.createElement('br'));
+
+  const createdByText = document.createElement('span');
+  createdByText.textContent = 'Created by: ';
+  createdByText.style.color = 'red';
+  createdByText.style.fontWeight = 'bold';
+  desc.appendChild(createdByText);
+
+  const createdByName = document.createElement('span');
+  createdByName.textContent = cache.username;
+  createdByName.style.color = 'red';
+  createdByName.style.fontWeight = 'bold';
+  desc.appendChild(createdByName);
+
+  popupContent.appendChild(desc);
+  
+  // Add links
+  const linksContainer = document.createElement('div');
+  linksContainer.classList.add('links-container');
+  
+  const commentLink = document.createElement('a');
+  commentLink.textContent = "Leave a comment  ";
+  const cacheId = cache._id.toString();
+  commentLink.href = '/comment/';
+  commentLink.classList.add('link');
+  localStorage.removeItem('cacheID');
+  localStorage.setItem('cacheID', cacheId);
+  linksContainer.appendChild(commentLink);
+
+  const viewComments = document.createElement('a');
+  viewComments.textContent = "View comments     ";
+  viewComments.href = '/viewcomments/';
+  viewComments.classList.add('link');
+  localStorage.removeItem('cacheID');
+  localStorage.setItem('cacheID', cacheId);
+  linksContainer.appendChild(viewComments);
 
 
-
-       
+if (isOwner) {
+  const deleteLink = document.createElement('a');
+  deleteLink.textContent = 'Delete the cache';
+  deleteLink.href = '#';
+  
+  deleteLink.addEventListener('click', () => {
+    const confirmed = confirm('Are you sure you want to delete this cache?');
+    if (confirmed) {
+      fetch("http://127.0.0.1:3000/cache/"+cache._id, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then(data => {
+        console.log(data);
+        $f7.dialog.alert('The cache has been deleted.');
+        // Remove the marker from the map
+        console.log("removing");
+        marker.remove();
+        window.location.reload();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        $f7.dialog.alert('There was an error deleting the cache. Please try again later.');
+      });
+    }
+    
+  });
+  
+  popupContent.appendChild(deleteLink);
+}
+  popupContent.appendChild(linksContainer);
+  
+  // Create the popup
+  const popup = L.popup();
+  popup.setContent(popupContent);
+  
+  // Bind the popup to the marker
+  const marker = L.marker([cache.location.lat, cache.location.lng]).addTo(map);
+  marker.bindPopup(popup);
+}
 
       </script>
     </div>
@@ -92,6 +234,8 @@
       localStorage.removeItem('loggedIn');
       window.location.replace("/signup");
     };
+
+
 
     
 
@@ -134,8 +278,10 @@ onClick: function () {
       .then(data => {
   const latRounded = Math.round(lat * 1000) / 1000;
   const lngRounded = Math.round(lng * 1000) / 1000;
-  L.marker([lat, lng], { icon: redMarker }).addTo(map)
-    .bindPopup(`<b>${localStorage.getItem('username')}</b> created a cache at <b style="color: blue">${latRounded}, ${lngRounded}</b> with difficulty <b style="color: darkgreen">${difficulty}</b>`).openPopup();
+   const marker = L.marker([lat, lng]).addTo(map);
+        marker.bindPopup(localStorage.getItem('username') + " created a cache at location " + latRounded + "," + lngRounded + " with difficulty " + difficulty).openPopup();
+        window.location.reload();
+        
 })
       .catch(error => {
         console.error('Error:', error);
@@ -143,6 +289,7 @@ onClick: function () {
       });
       });
   });
+  
 }
     },
     {
@@ -176,8 +323,9 @@ onClick: function () {
      .then(data => {
   const latRounded = Math.round(lat * 1000) / 1000;
   const lngRounded = Math.round(lng * 1000) / 1000;
-  L.marker([lat, lng], { icon: redMarker }).addTo(map)
-    .bindPopup(`<b>${localStorage.getItem('username')}</b> created a cache at <b style="color: blue">${latRounded}, ${lngRounded}</b> with difficulty <b style="color: darkgreen">${difficulty}</b>`).openPopup();
+  const marker = L.marker([lat, lng]).addTo(map);
+        marker.bindPopup(localStorage.getItem('username') + " created a cache at location " + latRounded + "," + lngRounded + " with difficulty " + difficulty).openPopup();
+        window.location.reload();
 })
       .catch(error => {
         console.error('Error:', error);
@@ -194,6 +342,7 @@ onClick: function () {
 
   const actions = $f7.actions.create({ buttons: buttons });
   actions.open();
+  
 }
 
     // Create a red marker icon

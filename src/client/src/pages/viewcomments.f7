@@ -1,0 +1,80 @@
+<template>
+  <div class="page" data-name="comments">
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="left">
+          <a href="#" class="link back" @click="${reloadPage}">
+            <i class="icon icon-back"></i>
+            <span>Back</span>
+          </a>
+        </div>
+        <div class="title">Comments</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="list">
+        <div id="comments"></div>
+
+        <style>
+          #comments .comment {
+            border: 1px solid black;
+            padding: 10px;
+            margin: 10px;
+          }
+
+          #comments .comment p {
+            font-style: italic;
+          }
+
+          #comments .comment .username {
+            color: blue;
+          }
+        </style>
+  
+        <script>
+          const loadComments = async () => {
+            const cacheID = localStorage.getItem('cacheID');
+            const response = await fetch("http://127.0.0.1:3000/comment/" + cacheID)
+              .then(response => {
+                if (!response.ok) throw new Error(response.status);
+                return response.json();
+              })
+              .then(data => {
+                data.forEach(comment => {
+                  const commentDiv = document.createElement('div');
+                  commentDiv.classList.add('comment');
+
+                  const commentContent = document.createElement('p');
+                  commentContent.textContent = comment.comment;
+                  commentDiv.appendChild(commentContent);
+
+                  const username = document.createElement('div');
+                  username.textContent = 'User: ' + comment.username;
+                  username.classList.add('username');
+                  commentDiv.appendChild(username);
+
+                  document.getElementById('comments').appendChild(commentDiv);
+                });
+              })
+              .catch(error => {
+                console.error('Error:', error);
+              });
+          }
+
+          loadComments();
+        </script>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+  export default (props, { $f7, $update }) => {
+    
+   
+ const reloadPage = () => {
+  window.location.reload();
+ };
+   
+    return $render;
+  }
+</script>

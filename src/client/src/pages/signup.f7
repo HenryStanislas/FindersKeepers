@@ -55,9 +55,9 @@
 <script>
   export default (props, { $f7, $update }) => {
     // Login screen demo data
-    let username = 'ae';
-    let password = 'fa';
-    let email = 'afe';
+    let username = '';
+    let password = '';
+    let email = '';
 
     const updateUsername = (e) => {
       username = e.target.value;
