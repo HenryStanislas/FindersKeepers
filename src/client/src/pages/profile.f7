@@ -128,7 +128,6 @@ const saveLocation = () => {
   const locationInput = document.querySelector('#location-input');
   const newLocation = locationInput.value;
   
-  // save location to local storage
   localStorage.setItem('location', newLocation);
   
   // update location in profile

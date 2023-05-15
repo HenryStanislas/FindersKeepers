@@ -39,3 +39,7 @@ Il peut ajouter une cache en cliquant deux fois sur la map
 Il semble qu'avec f7, il est très compliqué d'ajouter des photos pour les caches ou même pour l'avatar. La doc ne semble pas très fournie à ce sujet.
 
 On a aussi crée un super logo qu'on a pas pu implémenter
+
+Pour la partie portation mobile, il semblerait que l'utilisation de f7 a rendu la tâche plus compliquée également. En effet, sur Android Studio préalablement, il était nécessaire de placer les dossiers server et client dans le dossier www de manière à pouvoir build l'application. Cependant, les points d'entrée dans les fichiers index.html et index.js n'ont pas pu être réalisés de manière à accéder au client et au serveur. 
+
+la plupart des groupes n'ayant pas utilisé f7, il est impossible de savoir si nous manquions de technique ou si l'implémentation était très difficile en absolu. Le manque de documentation à ce sujet n'a pas aidé à l'avancée du sujet
