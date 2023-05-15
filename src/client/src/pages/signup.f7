@@ -99,13 +99,23 @@ window.location.replace("/map");      });
          localStorage.removeItem('loggedIn');
       localStorage.setItem('loggedIn', true); 
       localStorage.setItem('username', username); 
+      localStorage.getItem('email',email);
       } else if (data.error === "Username already exists") {
         $f7.dialog.alert("Username already exists, try to log in instead");
         console.log("Username already exists");
       } else if (data.error === "Email already exists. Please log in instead") {
         $f7.dialog.alert("Email already exists. Please log in instead");
         console.log("Email already exists. Please log in instead");
+      } else if (data.error === "Invalid email format") {
+        $f7.dialog.alert("Invalid email format");
+        console.log("Invalid email format");
       }
+      else if (data.error ===  "Username must have at least 3 letters") {
+        $f7.dialog.alert( "Username must have at least 3 letters");
+        console.log( "Username must have at least 3 letters");
+      }
+     
+    
     })
     .catch(error => {
       console.error('There was a problem with the fetch operation:', error);

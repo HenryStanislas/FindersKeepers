@@ -40,12 +40,6 @@ MongoClient.connect(url)
     const users = db.collection("users");
     const caches = db.collection("caches");
 
-    let tab = ["un", "deux"];
-
-    app.get("/list", (req, res) => {
-      console.log("coucou");
-      // users.find().toArray().then(items => res.json(items));
-    })
     app.get("/", (req, res) => {
       console.log("root");
       res.json(tab);
@@ -59,26 +53,32 @@ MongoClient.connect(url)
         password: req.body.password,
         email: req.body.email
       }
-      console.log("salut " + user.username);
-      console.log("salut " + user.password);
-      console.log("salut " + user.email);
     
       // Check if user exists
       users.findOne({ username: user.username })
         .then(existingUser => {
           if (existingUser) {
-            console.log("pitié 1");
             return res.status(201).json({ error: "Username already exists" });
           } else {
             users.findOne({ email: user.email })
               .then(existingUserWithEmail => {
                 if (existingUserWithEmail) {
-                  console.log("pitié 2");
                   return res.status(201).json({ error: "Email already exists. Please log in instead" });
                 } else {
+                  // Validate email format
+                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  if (!emailRegex.test(user.email)) {
+                    return res.status(201).json({ error: "Invalid email format" });
+                  }
+    
+                  // Validate username length
+                  if (user.username.length < 3) {
+                    return res.status(201).json({ error: "Username must have at least 3 letters" });
+                  }
+    
                   users.insertOne(user)
                     .then(result => {
-                      res.status(201).json({ message: "User created successfully!" }); 
+                      res.status(201).json({ message: "User created successfully!" });
                     })
                     .catch(err => {
                       console.error(err);
@@ -87,14 +87,12 @@ MongoClient.connect(url)
                 }
               })
               .catch(err => {
-                console.log("pitié 5");
                 console.error(err);
                 res.status(500).json({ error: "Internal server error" });
               });
           }
         })
         .catch(err => {
-          console.log("pitié 6");
           console.error(err);
           res.status(500).json({ error: "Internal server error" });
         });

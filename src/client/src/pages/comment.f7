@@ -74,7 +74,6 @@
 
 <script>
   export default (props, { $f7, $update }) => {
-    console.log("stp");
     // Comment screen data
     let username = '';
     let comment = '';

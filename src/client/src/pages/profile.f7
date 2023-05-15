@@ -46,7 +46,7 @@
               </div>
               <div class="item-inner">
                 <div class="item-title">Email</div>
-                <div class="item-after">example@example.com</div>
+                <div class="item-after">${localStorage.getItem('email')}</div>
               </div>
             </a>
           </li>
@@ -127,7 +127,6 @@
 const saveLocation = () => {
   const locationInput = document.querySelector('#location-input');
   const newLocation = locationInput.value;
-  console.log(newLocation);
   
   // save location to local storage
   localStorage.setItem('location', newLocation);
