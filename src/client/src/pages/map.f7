@@ -23,6 +23,18 @@
               <div class="block-title">Settings</div>
               <div class="list">
                 <ul>
+                <li>
+  <a href="#" class="item-link item-content" id="profile-button" @click="${openProfilePopup}">
+    <div class="item-media">
+      <i class="icon f7-icons ios-only">person_round_fill</i>
+      <i class="icon material-icons md-only">person</i>
+    </div>
+    <div class="item-inner">
+      <div class="item-title">Profile</div>
+      <div class="item-after">View/Edit</div>
+    </div>
+  </a>
+</li>
               <li>
     <div class="item-content">
       <div class="item-media">
@@ -305,7 +317,9 @@ if (isOwner) {
       window.location.replace("/signup");
     };
 
-
+function openProfilePopup() {
+  $f7.views.main.router.navigate('/profile/');
+}
 
     
 
@@ -486,6 +500,9 @@ function openRangePopup() {
   popup.open();
 }
 
+
+
+
 function setRange() {
   console.log("aaaa");
   const rangeInput = document.querySelector('#range-input');
@@ -555,8 +572,6 @@ function openLeaderboardPopup() {
             cacheLocationsLat[cache._id] =lat;
             
           });
-            console.log("STPPPPPPPP" + cacheLocations['646164b2b450ebf3166aa233'].lng);
-
        
           const count = {};
           const foundCacheCount = {};
@@ -578,7 +593,7 @@ function openLeaderboardPopup() {
           const cacherList = sortedCachers.map(([username, count], i) => `<li>${i + 1}. ${username} - ${count}</li>`).join("");
           document.querySelector("#cacher-ranking").innerHTML = `<ul>${cacherList}</ul>`;
           const sortedFoundCaches = Object.entries(foundCacheCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
-const foundCacheList = sortedFoundCaches.map(([cacheID, count], i) => `<li>${i + 1}. Cache ${cacheID} (${cacheLocationsLat[cacheID]}, ${cacheLocationsLng[cacheID]}) - ${count} finds</li>`).join('');
+          const foundCacheList = sortedFoundCaches.map(([cacheID, count], i) => `<li>${i + 1}. Cache ${cacheID} (${cacheLocationsLat[cacheID]}, ${cacheLocationsLng[cacheID]}) - ${count} finds</li>`).join('');
           document.querySelector("#cache-ranking").innerHTML = `<ul>${foundCacheList}</ul>`;
 
           const sortedLeastFoundCaches = Object.entries(foundCacheCount).sort((a, b) => a[1] - b[1]).slice(0, 10);

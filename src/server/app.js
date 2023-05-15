@@ -156,7 +156,7 @@ MongoClient.connect(url)
     });
 
     app.get("/cache", async (req, res) => {
-      try {
+      try { 
         const caches = await db.collection("caches").find().toArray();
         res.json(caches);
       } catch (err) {
@@ -165,7 +165,7 @@ MongoClient.connect(url)
       }
     });
 
-    
+
     app.post('/comment/', async (req, res) => {
       const { username, comment,cacheID, foundCache} = req.body;
       console.log(foundCache);

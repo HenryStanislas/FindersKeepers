@@ -1,0 +1,150 @@
+<template>
+  <div class="page" data-name="profile">
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="left">
+
+          <a href="#" class="link back" @click="${reloadPage}">
+            <i class="icon icon-back"></i>
+            <span>Back</span>
+          </a>
+        </div>
+        <div class="title">Profile</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="block profile-info">
+        <div class="profile-picture">
+          <div class="circle"></div>
+        </div>
+        <div class="profile-details">
+<div class="profile-name" style="font-size: 35px; text-align: center; font-weight: bold;">
+  ${localStorage.getItem('username')}
+</div>          <div class="profile-stats">
+       
+          </div>
+        </div>
+      </div>
+      <div class="list">
+        <ul>
+          <li>
+            <a href="#" class="item-link item-content">
+              <div class="item-media">
+                <i class="icon f7-icons ios-only">person_crop_circle_fill_badge_checkmark</i>
+                <i class="icon material-icons md-only">verified_user</i>
+              </div>
+              <div class="item-inner">
+                <div class="item-title">Verified</div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="item-link item-content">
+              <div class="item-media">
+                <i class="icon f7-icons ios-only">envelope_fill</i>
+                <i class="icon material-icons md-only">email</i>
+              </div>
+              <div class="item-inner">
+                <div class="item-title">Email</div>
+                <div class="item-after">example@example.com</div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="item-link item-content" @click="${openLocationPopup}">
+              <div class="item-media">
+                <i class="icon f7-icons ios-only">location_circle_fill</i>
+                <i class="icon material-icons md-only">location_on</i>
+              </div>
+              <div class="item-inner">
+                <div class="item-title">Location</div>
+                <div class="item-after">New York City, NY</div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="item-link item-content">
+              <div class="item-media">
+                <i class="icon f7-icons ios-only">calendar_circle_fill</i>
+                <i class="icon material-icons md-only">event</i>
+              </div>
+              <div class="item-inner">
+                <div class="item-title">Joined</div>
+                <div class="item-after">May 2023</div>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+  export default (props, { $f7, $update }) => {
+
+   function openLocationPopup() {
+  // create popup
+ var popupHTML = `
+  <div class="popup" id="location-popup" style="padding: 16px; border: 1px solid #ccc;">
+    <div class="popup-header">
+      <div class="popup-title" style="font-size: 24px;">Edit Location</div>
+    </div>
+    <div class="popup-body">
+      <div class="list">
+        <div class="item-content">
+          <div class="item-inner">
+            <div class="item-title">Enter your location:</div>
+            <div class="item-input-wrap">
+              <input type="text" placeholder="City, State or ZIP Code" id="location-input">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="popup-footer" style="padding-top: 16px; border-top: 1px solid #ccc;">
+      <button class="button popup-close" data-popup="#location-popup">Cancel</button>
+      <button class="button popup-close" data-popup="#location-popup" id="save-location-button" >Save</button>
+    </div>
+  </div>
+`;
+  document.body.insertAdjacentHTML('beforeend', popupHTML);
+
+  // open popup
+  const popup = $f7.popup.create({
+    content: popupHTML,
+    on: {
+      opened() {
+        document.addEventListener('DOMContentLoaded', () => {
+  const saveRangeButton = document.querySelector('#save-location-button');
+  saveRangeButton.addEventListener('click', saveLocation);
+});
+      },
+    },
+  });
+  popup.open();
+}
+
+const saveLocation = () => {
+  const locationInput = document.querySelector('#location-input');
+  const newLocation = locationInput.value;
+  console.log(newLocation);
+  
+  // save location to local storage
+  localStorage.setItem('location', newLocation);
+  
+  // update location in profile
+  const locationElement = document.querySelector('.profile-location');
+  locationElement.textContent = newLocation;
+  
+  // close popup
+  const popup = $f7.popup.get('#location-popup');
+  popup.close();
+}; 
+   
+ const reloadPage = () => {
+  window.location.reload();
+ };
+   
+    return $render;
+  }
+</script>
