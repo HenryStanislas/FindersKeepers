@@ -38,3 +38,4 @@ Il peut ajouter une cache en cliquant deux fois sur la map
 
 Il semble qu'avec f7, il est très compliqué d'ajouter des photos pour les caches ou même pour l'avatar. La doc ne semble pas très fournie à ce sujet.
 
+On a aussi crée un super logo qu'on a pas pu implémenter
