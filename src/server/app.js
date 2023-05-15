@@ -4,6 +4,8 @@ const app = express()
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 app.use(express.json());
+const { ObjectId } = require('mongodb');
+
 const MongoClient = require('mongodb').MongoClient;
 const url = 'mongodb://127.0.0.1:27017/FindersKeepers_db';
 console.log("app");
@@ -162,6 +164,8 @@ MongoClient.connect(url)
         res.status(500).json({ error: "Internal server error" });
       }
     });
+
+    
     app.post('/comment/', async (req, res) => {
       const { username, comment,cacheID, foundCache} = req.body;
       console.log(foundCache);
@@ -186,17 +190,32 @@ MongoClient.connect(url)
       }
     });
 
-    app.delete('/cache/:cacheID', async (req, res) => {
+    app.get('/comment/', async (req, res) => {
       try {
         
-        console.log("jpp");
-        const cacheId = req.params.id;
-        const result = await db.collection("caches").deleteOne({cacheId});
-    console.log(result.deletedCount); // should be 1 if a cache with the given _id was found and deleted
-
+        const comments = await db.collection("comments").find().toArray(); //get all comments
+        res.json(comments);
       } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
+      }
+    });
+
+    app.delete('/cache/:cacheID', async (req, res) => {
+      const cacheId = req.params.cacheID;
+      if (!ObjectId.isValid(cacheId)) {
+        res.status(400).send('Invalid cache ID');
+        return;
+      }
+      try {
+        const result = await db.collection("caches").deleteOne({_id: new ObjectId(cacheId)});
+        if (result.deletedCount === 0) {
+        } else {
+          console.log("t le goat");
+          console.log(result.deletedCount);
+        }
+      } catch (error) {
+        console.error(error);
       }
     });
     

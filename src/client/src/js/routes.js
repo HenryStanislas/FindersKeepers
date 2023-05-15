@@ -7,7 +7,6 @@ import LogIn from '../pages/login.f7';
 import Map from '../pages/map.f7';
 import Comment from '../pages/comment.f7';
 import ViewComments from '../pages/viewcomments.f7';
-import Edit from '../pages/edit.f7';
 
 
 
@@ -21,10 +20,7 @@ var routes = [
     path: '/about/',
     component: AboutPage,
   },
-  {
-    path: '/edit/',
-    component: Edit,
-  },
+
   {
     path: '/viewcomments/',
     component: ViewComments,

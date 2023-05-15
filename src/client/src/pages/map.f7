@@ -1,16 +1,69 @@
+
+
 <template>
   <div class="page">
     <div class="toolbar toolbar-bottom" style="background-color: black; color: white";>
-     <div class="toolbar-inner">
-  <div class="title">FindersKeepers</div>
-  <div class="cache-wrapper" style="position: absolute; right: 140px; top: 0; margin: 10px;">
-    <a href="#" class="cache" style="color: white;" @click="${openCachePopup}">Add a cache</a>
-  </div>
-  
-  <div class="logout-wrapper" style="position: absolute; right: 0; top: 0; margin: 10px;">
-    <a href="#" class="logout" style="color: white;" @click="${logout}">Log out</a>
-  </div>
-</div>
+      <div class="toolbar-inner" style="display: flex; justify-content: center; align-items: center;">
+        <div class="title" style="font-size: 24px;">FindersKeepers</div>
+        <div class="cache-wrapper" style="position: absolute; right: 140px; top: 0; margin: 10px;">
+          <a href="#" class="cache" style="color: white;" @click="${openCachePopup}">Add a cache</a>
+        </div>
+        <div class="logout-wrapper" style="position: absolute; right: 0; top: 0; margin: 10px;">
+          <a href="#" class="logout" style="color: white;" @click="${logout}">Log out</a>
+        </div>
+        <div class="panel-open-wrapper" style="position: absolute; left: 0; top: 0; margin: 10px;">
+          <a href="#" class="panel-open" style="color: white;" >Settings</a>
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-left panel-cover">
+      <div class="view">
+        <div class="page">
+            <div class="page-content">
+              <div class="block-title">Settings</div>
+              <div class="list">
+                <ul>
+              <li>
+    <div class="item-content">
+      <div class="item-media">
+        <i class="icon f7-icons ios-only">location</i>
+        <i class="icon material-icons md-only">location_on</i>
+      </div>
+      <div class="item-inner">
+        <div class="item-title">Location</div>
+        <div class="item-after">On</div>
+      </div>
+    </div>
+  </li>
+ <li>
+  <a href="#" class="item-link item-content" id="leaderboard-button" @click="${openLeaderboardPopup}">
+    <div class="item-media">
+      <i class="icon f7-icons ios-only">chart_bar</i>
+      <i class="icon material-icons md-only">leaderboard</i>
+    </div>
+    <div class="item-inner">
+      <div class="item-title">Ranking</div>
+      <div class="item-after">Top 10</div>
+    </div>
+  </a>
+</li>
+ <li>
+  <a href="#" class="item-link item-content" @click="${openRangePopup}">
+    <div class="item-media">
+      <i class="icon f7-icons ios-only">slider_horizontal_3</i>
+      <i class="icon material-icons md-only">tune</i>
+    </div>
+    <div class="item-inner">
+      <div class="item-title">Range</div>
+      <div class="item-after"><span id="range-value">${localStorage.getItem('radius')} meters</span></div>
+    </div>
+  </a>
+</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="page-content">
       <div class="map-wrapper" style="border-top: 10px solid black; height: calc(100% - 96px);">
@@ -47,7 +100,10 @@ function loadCaches() {
         
         const userLocation = map.getCenter();
         const cacheLocation = L.latLng(lat, lng);
-        const radius = 5000; // in meters
+        
+        
+        const radius = localStorage.getItem('radius');
+        
         const distance = cacheLocation.distanceTo(userLocation);
         if (distance > radius) return; // skip this cache
 
@@ -104,13 +160,26 @@ function loadCaches() {
   console.log("Clicked at "+ lat + lng);
 });
 
-        function onLocationFound(e) {
-          var radius = e.accuracy;
-          L.marker(e.latlng).addTo(map)
-            .bindPopup("You are within " + radius + " meters from this point").openPopup();
-          L.circle(e.latlng, radius).addTo(map);
-          loadCaches();
-        }
+   function onLocationFound(e) {
+  const radius = e.accuracy;
+  const radius2 = localStorage.getItem('radius');
+
+  L.marker(e.latlng).addTo(map)
+    .bindPopup("You are within " + radius + " meters from this point")
+    .openPopup();
+  
+  L.circle(e.latlng, radius).addTo(map);
+  
+  // add a second circle with a light pink color
+  L.circle(e.latlng, {
+    radius: radius2,
+    color: '#ffcccc',
+    fillColor: '#ffcccc',
+    fillOpacity: 0.1
+  }).addTo(map);
+  
+  loadCaches();
+}
         
 function createCommentPopup(cache) {
   const isOwner = localStorage.getItem('username') === cache.username;
@@ -183,6 +252,7 @@ if (isOwner) {
   deleteLink.addEventListener('click', () => {
     const confirmed = confirm('Are you sure you want to delete this cache?');
     if (confirmed) {
+      const cacheId = cache._id.toString();
       fetch("http://127.0.0.1:3000/cache/"+cache._id, {
         method: 'DELETE',
         headers: {
@@ -195,17 +265,17 @@ if (isOwner) {
       })
       .then(data => {
         console.log(data);
-        $f7.dialog.alert('The cache has been deleted.');
         // Remove the marker from the map
-        console.log("removing");
+        
+        
         marker.remove();
-        window.location.reload();
+        
       })
       .catch(error => {
         console.error('Error:', error);
-        $f7.dialog.alert('There was an error deleting the cache. Please try again later.');
       });
     }
+    window.location.reload();
     
   });
   
@@ -355,6 +425,174 @@ onClick: function () {
       shadowSize: [41, 41]
     });
 
+
+
+function openRangePopup() {
+  const popupHTML = `
+    <div class="popup">
+      <div class="view">
+        <div class="page">
+          <div class="navbar">
+            <div class="navbar-inner">
+              <div class="title">Set the range within which you can see the caches</div>
+              <div class="right">
+                <a href="#" class="link popup-close">Close</a>
+              </div>
+            </div>
+          </div>
+          <div class="page-content">
+            <div class="list">
+              <ul>
+                <li>
+                  <div class="item-content item-input">
+                    <div class="item-inner">
+                      <div class="item-title item-label">Range (in meters)</div>
+                      <div class="item-input-wrap">
+                        <input type="number" placeholder="Enter range" id="range-input" value="${localStorage.getItem('radius')}">
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="block">
+              <div class="row">
+                <div class="col">
+                  <a href="#" class="button button-fill color-green" id="save-range-button">Save</a>
+                </div>
+                <div class="col">
+                  <a href="#" class="button popup-close">Cancel</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  const popup = $f7.popup.create({
+    content: popupHTML,
+    on: {
+      opened() {
+        const rangeInput = document.querySelector('#range-input');
+        rangeInput.focus();
+        rangeInput.select();
+
+        const saveRangeButton = document.querySelector('#save-range-button');
+        saveRangeButton.addEventListener('click', setRange);
+      },
+    },
+  });
+  popup.open();
+}
+
+function setRange() {
+  console.log("aaaa");
+  const rangeInput = document.querySelector('#range-input');
+  const newRange = rangeInput.value;
+  localStorage.setItem('radius', newRange);
+  const rangeValue = document.querySelector('#range-value');
+  rangeValue.textContent = `${newRange} meters`;
+  console.log(rangeInput);
+  $f7.popup.close();
+  window.location.reload();
+
+}
+
+function openLeaderboardPopup() {
+  const popup = $f7.popup.create({
+    content: `
+      <div class="popup leaderboard-popup">
+        <div class="view">
+          <div class="page">
+            <div class="navbar">
+              <div class="navbar-inner">
+                <div class="title">Leaderboard</div>
+                <div class="right">
+                  <a href="#" class="link popup-close">Close</a>
+                </div>
+              </div>
+            </div>
+            <div class="page-content">
+              <div class="block-title" style="color: #FF69B4;">Top 10 Cachers</div>
+              <div id="cacher-ranking"></div>
+              <div class="block-title" style="color: #FFA07A;">Top 10 Found Caches</div>
+              <div id="cache-ranking"></div>
+              <div class="block-title" style="color: #87CEFA;">Top 10 Least Found Caches</div>
+              <div id="least-found-ranking"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+    on: {
+      open: async () => {
+        try {
+          // Fetch comments
+          const commentResponse = await fetch("http://127.0.0.1:3000/comment/");
+          if (!commentResponse.ok) throw new Error(commentResponse.status);
+          const comments = await commentResponse.json();
+
+          // Fetch caches
+          const cacheResponse = await fetch("http://127.0.0.1:3000/cache/");
+          if (!cacheResponse.ok) throw new Error(cacheResponse.status);
+          const caches = await cacheResponse.json();
+
+          // Extract cache locations
+          const cacheLocationsLng = {};
+          const cacheLocationsLat= {};
+           const cacheLocations = {};
+
+          
+          let lat, lng;
+          caches.forEach(cache => {
+            lng = cache.location.lng;
+            lat=cache.location.lat;
+            console.log(lng);
+            console.log(lat);
+            cacheLocations[cache._id] = { lng, lat };
+            cacheLocationsLng[cache._id] = lng;
+            cacheLocationsLat[cache._id] =lat;
+            
+          });
+            console.log("STPPPPPPPP" + cacheLocations['646164b2b450ebf3166aa233'].lng);
+
+       
+          const count = {};
+          const foundCacheCount = {};
+          comments.forEach(comment => {
+            if (comment.foundCache) {
+              if (count[comment.username]) {
+                count[comment.username]++;
+              } else {
+                count[comment.username] = 1;
+              }
+              if (foundCacheCount[comment.cacheID]) {
+                foundCacheCount[comment.cacheID]++;
+              } else {
+                foundCacheCount[comment.cacheID] = 1;
+              }
+            }
+          });
+           const sortedCachers = Object.entries(count).sort((a, b) => b[1] - a[1]).slice(0, 10);
+          const cacherList = sortedCachers.map(([username, count], i) => `<li>${i + 1}. ${username} - ${count}</li>`).join("");
+          document.querySelector("#cacher-ranking").innerHTML = `<ul>${cacherList}</ul>`;
+          const sortedFoundCaches = Object.entries(foundCacheCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
+const foundCacheList = sortedFoundCaches.map(([cacheID, count], i) => `<li>${i + 1}. Cache ${cacheID} (${cacheLocationsLat[cacheID]}, ${cacheLocationsLng[cacheID]}) - ${count} finds</li>`).join('');
+          document.querySelector("#cache-ranking").innerHTML = `<ul>${foundCacheList}</ul>`;
+
+          const sortedLeastFoundCaches = Object.entries(foundCacheCount).sort((a, b) => a[1] - b[1]).slice(0, 10);
+          const leastFoundCacheList = sortedLeastFoundCaches.map(([cacheID, count], i) => `<li>${i + 1}. Cache ${cacheID} - ${count} finds</li>`).join("");
+          document.querySelector("#least-found-ranking").innerHTML = `<ul>${leastFoundCacheList}</ul>`;
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      },
+    },
+  });
+  
+  popup.open();
+}
     return $render;
   };
 </script>
