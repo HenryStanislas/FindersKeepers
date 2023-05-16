@@ -5,6 +5,8 @@ Noé Simmat
 
 Explication des fonctionnalités de l'app:
 
+La base de donnée s'appelle FindersKeepers_db, elle est crée directement dans le terminal à  l'aide de mongosh
+
 -S'inscrire avec un username, un email (uniques dans la base) et un mot de passe. On vérifie que l'username a une longueur de 3 minimum, et que l'email a un format correct
 -Se connecter. Dans tous les cas, on utilise JWT pour générer un token d'une durée de 24 heures
 
